@@ -278,6 +278,9 @@ void RainbowFromPotentiometer(void)
 {
   uint32_t adcValue;
 
+  /* Make sure conversion is running */
+  HAL_ADC_Start(&hadc1);
+
   if (HAL_ADC_PollForConversion(&hadc1, 10) != HAL_OK)
   {
     return;
@@ -326,9 +329,16 @@ void RainbowFromPotentiometer(void)
       break;
   }
 
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, r);  // Red (PB8, D9)
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, g);  // Green (PB9, D10)
-  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, b);  // Blue (PA7, D11)
+  /* Most шилды с RGB-диодом имеют общий анод (светодиод включается при уровне 0):
+   * инвертируем яркость, чтобы 0 = выкл, 255 = макс.яркость в логике нашей модели.
+   */
+  uint8_t r_out = 255 - r;
+  uint8_t g_out = 255 - g;
+  uint8_t b_out = 255 - b;
+
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, r_out);  // Red (PB8, D9)
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, g_out);  // Green (PB9, D10)
+  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, b_out);  // Blue (PA7, D11)
 }
 
 /* USER CODE END 4 */
