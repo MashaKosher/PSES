@@ -41,7 +41,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
@@ -53,7 +53,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_TIM3_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
 void RainbowFromPotentiometer(void);
 /* USER CODE END PFP */
@@ -94,11 +94,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   MX_GPIO_Init();
   MX_ADC1_Init();
-  MX_TIM3_Init();
+  MX_TIM2_Init();
   MX_TIM4_Init();
 
   HAL_ADC_Start(&hadc1);
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);  // PA7 (D11, Blue)
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);  // PB10 (D11, Blue)
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);  // PB8 (D9, Red)
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);  // PB9 (D10, Green)
   /* USER CODE END 2 */
@@ -167,14 +167,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /* PA7 - TIM3_CH2 (D11, Blue) */
-  GPIO_InitStruct.Pin = GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /* PB8, PB9 - TIM4_CH3, TIM4_CH4 (D9 Red, D10 Green) */
-  GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+  /* PB8, PB9, PB10 - TIM4_CH3, TIM4_CH4, TIM2_CH3 (D9 Red, D10 Green, D11 Blue) */
+  GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -211,23 +205,23 @@ static void MX_ADC1_Init(void)
 #endif
 }
 
-static void MX_TIM3_Init(void)
+static void MX_TIM2_Init(void)
 {
   TIM_OC_InitTypeDef sConfigOC = {0};
 
-  __HAL_RCC_TIM3_CLK_ENABLE();
+  __HAL_RCC_TIM2_CLK_ENABLE();
 
-  htim3.Instance = TIM3;
+  htim2.Instance = TIM2;
   /* For 8 MHz system clock:
    * Prescaler = 79  -> 8 MHz / (79+1) = 100 kHz
    * Period    = 255 -> 100 kHz / 256 ≈ 390 Hz PWM
    */
-  htim3.Init.Prescaler = 79;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 255;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  htim2.Init.Prescaler = 79;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 255;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -236,7 +230,7 @@ static void MX_TIM3_Init(void)
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -338,7 +332,7 @@ void RainbowFromPotentiometer(void)
 
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, r_out);  // Red (PB8, D9)
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, g_out);  // Green (PB9, D10)
-  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, b_out);  // Blue (PA7, D11)
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, b_out);  // Blue (PB10, D11)
 }
 
 /* USER CODE END 4 */
