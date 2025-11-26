@@ -40,7 +40,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef   hadc1;
+UART_HandleTypeDef  huart2;
 
 /* USER CODE BEGIN PV */
 
@@ -51,6 +52,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_USART2_UART_Init(void);
 void RainbowFromPotentiometer(void);
 /* USER CODE END PFP */
 
@@ -90,6 +92,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   MX_GPIO_Init();
   MX_ADC1_Init();
+  MX_USART2_UART_Init();
   HAL_ADC_Start(&hadc1);
   /* USER CODE END 2 */
 
@@ -158,6 +161,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /* USART2 TX (PA2), RX (PA3) для связи с ПК через ST-LINK VCP */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /* RGB LED on Arduino D9-D11:
    * D9  -> PC7
    * D10 -> PB6
@@ -210,6 +224,25 @@ static void MX_ADC1_Init(void)
 #ifdef ADC_CR2_CAL
   HAL_ADCEx_Calibration_Start(&hadc1);
 #endif
+}
+
+static void MX_USART2_UART_Init(void)
+{
+  __HAL_RCC_USART2_CLK_ENABLE();
+
+  huart2.Instance          = USART2;
+  huart2.Init.BaudRate     = 115200;
+  huart2.Init.WordLength   = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits     = UART_STOPBITS_1;
+  huart2.Init.Parity       = UART_PARITY_NONE;
+  huart2.Init.Mode         = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 void RainbowFromPotentiometer(void)
@@ -284,6 +317,14 @@ void RainbowFromPotentiometer(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, r_state); // D9
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, g_state); // D10
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, b_state); // D11
+
+  /* Отправка текущего цвета по UART2 в формате: 0xFF R G B */
+  uint8_t frame[4];
+  frame[0] = 0xFF;
+  frame[1] = r;
+  frame[2] = g;
+  frame[3] = b;
+  HAL_UART_Transmit(&huart2, frame, sizeof(frame), 5);
 }
 
 /* USER CODE END 4 */
