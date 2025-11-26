@@ -42,6 +42,8 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef   hadc1;
 UART_HandleTypeDef  huart2;
+TIM_HandleTypeDef   htim3;   // PWM for B (PA7, TIM3_CH2)
+TIM_HandleTypeDef   htim4;   // PWM for G (PB6, TIM4_CH1)
 
 /* USER CODE BEGIN PV */
 
@@ -53,6 +55,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM3_Init(void);
+static void MX_TIM4_Init(void);
 void RainbowFromPotentiometer(void);
 /* USER CODE END PFP */
 
@@ -93,7 +97,13 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_USART2_UART_Init();
+  MX_TIM3_Init();
+  MX_TIM4_Init();
   HAL_ADC_Start(&hadc1);
+
+  /* Start PWM on TIM3_CH2 (PA7, B) and TIM4_CH1 (PB6, G) */
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -173,24 +183,27 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* RGB LED on Arduino D9-D11:
-   * D9  -> PC7
-   * D10 -> PB6
-   * D11 -> PA7
-   * Настраиваем их как обычные выходы (без ШИМ).
+   * D9  -> PC7   (R, обычный GPIO)
+   * D10 -> PB6   (G, TIM4_CH1, PWM)
+   * D11 -> PA7   (B, TIM3_CH2, PWM)
    */
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-  /* D10 -> PB6 */
+  /* PWM outputs first: PB6 (TIM4_CH1), PA7 (TIM3_CH2) */
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+  /* D10 -> PB6, TIM4_CH1 */
   GPIO_InitStruct.Pin = GPIO_PIN_6;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* D11 -> PA7 */
+  /* D11 -> PA7, TIM3_CH2 */
   GPIO_InitStruct.Pin = GPIO_PIN_7;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /* D9 -> PC7 */
+  /* D9 -> PC7, обычный цифровой выход (ON/OFF для R) */
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Pin = GPIO_PIN_7;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
@@ -240,6 +253,65 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
 
   if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+static void MX_TIM3_Init(void)
+{
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  __HAL_RCC_TIM3_CLK_ENABLE();
+
+  htim3.Instance = TIM3;
+  /* For 8 MHz system clock:
+   * Prescaler = 79  -> 8 MHz / (79+1) = 100 kHz
+   * Period    = 255 -> 100 kHz / 256 ≈ 390 Hz PWM
+   */
+  htim3.Init.Prescaler = 79;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 255;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+static void MX_TIM4_Init(void)
+{
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  __HAL_RCC_TIM4_CLK_ENABLE();
+
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 79;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 255;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -300,23 +372,19 @@ void RainbowFromPotentiometer(void)
       break;
   }
 
-  /* Most шилды с RGB-диодом имеют общий анод (светодиод включается при уровне 0):
-   * инвертируем яркость, чтобы 0 = выкл, 255 = макс.яркость в логике нашей модели.
+  /* Маппинг:
+   * R -> D9  (PC7)  - цифровой ON/OFF (нет PWM на этом пине)
+   * G -> D10 (PB6)  - PWM (TIM4_CH1)
+   * B -> D11 (PA7)  - PWM (TIM3_CH2)
    */
-  /* Для простоты используем цифровой вывод (вкл/выкл каналов RGB).
-   * Порог по яркости ~ 128: выше порога - канал включён, ниже - выключен.
-   * Маппинг:
-   * R -> D9  (PC7)
-   * G -> D10 (PB6)
-   * B -> D11 (PA7)
-   */
-  GPIO_PinState r_state = (r > 127) ? GPIO_PIN_SET : GPIO_PIN_RESET;
-  GPIO_PinState g_state = (g > 127) ? GPIO_PIN_SET : GPIO_PIN_RESET;
-  GPIO_PinState b_state = (b > 127) ? GPIO_PIN_SET : GPIO_PIN_RESET;
 
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, r_state); // D9
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, g_state); // D10
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, b_state); // D11
+  // Красный: простой порог, включаем/выключаем пин
+  GPIO_PinState r_state = (r > 10) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, r_state); // D9 (R)
+
+  // Зелёный и синий: полноценно используем 0..255 как коэффициент заполнения PWM
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, g);  // PB6, D10 (G)
+  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, b);  // PA7, D11 (B)
 
   /* Отправка текущего цвета по UART2 в формате: 0xFF R G B */
   uint8_t frame[4];
