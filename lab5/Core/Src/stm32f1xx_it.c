@@ -19,6 +19,8 @@
 #include "main.h"
 #include "stm32f1xx_it.h"
 #include "cmsis_os2.h"
+/* Provided by Keil RTE when RTX5 is enabled; defines RTE_CMSIS_RTOS2_RTX5_SOURCE */
+#include "RTE_Components.h"
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart2_rx;
