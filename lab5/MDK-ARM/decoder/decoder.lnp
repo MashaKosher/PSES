@@ -1,0 +1,22 @@
+--cpu Cortex-M3
+"decoder\startup_stm32f103xb.o"
+"decoder\main.o"
+"decoder\stm32f1xx_it.o"
+"decoder\stm32f1xx_hal_msp.o"
+"decoder\stm32f1xx_hal_gpio_ex.o"
+"decoder\stm32f1xx_hal.o"
+"decoder\stm32f1xx_hal_rcc.o"
+"decoder\stm32f1xx_hal_rcc_ex.o"
+"decoder\stm32f1xx_hal_gpio.o"
+"decoder\stm32f1xx_hal_dma.o"
+"decoder\stm32f1xx_hal_cortex.o"
+"decoder\stm32f1xx_hal_pwr.o"
+"decoder\stm32f1xx_hal_flash.o"
+"decoder\stm32f1xx_hal_flash_ex.o"
+"decoder\stm32f1xx_hal_exti.o"
+"decoder\stm32f1xx_hal_uart.o"
+"decoder\system_stm32f1xx.o"
+--strict --scatter "decoder\decoder.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "decoder.map" -o decoder\decoder.axf
