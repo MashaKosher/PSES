@@ -42,11 +42,27 @@ decoder/
 
 ## Enabling RTOS (CubeMX / Keil)
 
-This repo contains the **application-side** RTOS integration (task + ISR signaling). To actually build/run with RTOS you need to enable an RTOS middleware:
+This repo contains the **application-side** RTOS integration (task + ISR signaling).  
+To actually **link** and **flash** you must add a real RTOS implementation (kernel) to the Keil project.
+
+### Option A (recommended for Keil): RTX5 (CMSIS-RTOS2)
+
+This matches **ARM::CMSIS-RTX** pack and the code in `lab5` (CMSIS-RTOS2 API):
+`osThreadNew`, `osThreadFlagsWait/Set`, and IRQ hooks `osRtxSVCHandler/osRtxPendSVHandler/osRtxSysTickHandler`.
+
+1. In Keil: **Pack Installer** → ensure **ARM::CMSIS-RTX** is installed.
+2. In Keil: **Project → Manage → Run-Time Environment**:
+   - Enable **CMSIS → CORE**
+   - Enable **CMSIS → RTOS2 (API) → Keil RTX5**
+3. Keil will add the needed RTOS sources/config under `MDK-ARM/RTE/...`.
+4. Rebuild — linker errors like `Undefined symbol osKernelInitialize` must disappear.
+
+### Option B: CubeMX FreeRTOS
 
 1. Open `decoder.ioc` in STM32CubeMX.
-2. Enable **FreeRTOS** (recommended) or another RTOS middleware supported by your toolchain.
-3. Regenerate the project, keeping user code blocks.
+2. Enable **FreeRTOS** middleware.
+3. Regenerate project (keep user code blocks).
+4. After regeneration you may need to adapt the code to CMSIS-RTOS2 API (if CubeMX generates CMSIS-RTOS2 wrappers).
 
 ## Protocol
 
