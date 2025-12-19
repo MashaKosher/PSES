@@ -54,6 +54,11 @@ This matches **ARM::CMSIS-RTX** pack and the code in `lab5` (CMSIS-RTOS2 API):
 2. In Keil: **Project → Manage → Run-Time Environment**:
    - Enable **CMSIS → CORE**
    - Enable **CMSIS → RTOS2 (API) → Keil RTX5**
+     - **Variant**: prefer **Source** (not Library) to avoid linker attribute mismatches
+   - Enable **CMSIS → OS Tick (API) → SysTick** (required by RTX5)
+3. **Important (fix for SCB->SHPR / osSafetyClass_Valid errors)**: make sure the project uses the **Pack CMSIS headers**, not the old local Cube CMSIS headers.
+   - In this repo `lab5/MDK-ARM/decoder.uvprojx` is configured to **not** force `../Drivers/CMSIS/Include` or local `RTOS2/Include` on the include path.
+   - If you manually changed include paths, ensure `../Drivers/CMSIS/Include` is **removed** (otherwise RTX5 sources can compile against the wrong `core_cm3.h` and fail on `SCB->SHPR`).
 3. Keil will add the needed RTOS sources/config under `MDK-ARM/RTE/...`.
 4. Rebuild — linker errors like `Undefined symbol osKernelInitialize` must disappear.
 
