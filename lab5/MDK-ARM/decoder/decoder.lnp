@@ -16,6 +16,9 @@
 "decoder\stm32f1xx_hal_exti.o"
 "decoder\stm32f1xx_hal_uart.o"
 "decoder\system_stm32f1xx.o"
+"..\..\..\..\AppData\Local\Arm\Packs\ARM\CMSIS-RTX\5.9.0\Library\ARM\RTX_V7M.lib"
+"decoder\rtx_lib.o"
+"decoder\rtx_config.o"
 --strict --scatter "decoder\decoder.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
