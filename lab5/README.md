@@ -73,6 +73,12 @@ STM32F103RBT6 has only **20KB RAM**, RTX5 defaults can be too large. Fix it by r
    - **RTX dynamic memory**: 0x1000 (4KB) or 0x0800 (2KB) if still too big
 3. Rebuild.
 
+This repository already includes a tuned config in:
+- `lab5/MDK-ARM/RTE/_decoder/RTX_Config.h`
+- `lab5/MDK-ARM/RTE/_decoder/RTX_Config.c`
+
+If you previously generated different RTX config files on your PC, do a `git pull` and **rebuild** to pick up the smaller defaults.
+
 ### Option B: CubeMX FreeRTOS
 
 1. Open `decoder.ioc` in STM32CubeMX.
