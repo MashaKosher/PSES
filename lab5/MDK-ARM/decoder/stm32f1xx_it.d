@@ -20,4 +20,5 @@ decoder/stm32f1xx_it.o: ..\Core\Src\stm32f1xx_it.c ..\Core\Inc\main.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h \
   ..\Core\Inc\stm32f1xx_it.h \
-  C:\Users\Kiril\AppData\Local\Arm\Packs\ARM\CMSIS\6.2.0\CMSIS\RTOS2\Include\cmsis_os2.h
+  C:\Users\Kiril\AppData\Local\Arm\Packs\ARM\CMSIS\6.2.0\CMSIS\RTOS2\Include\cmsis_os2.h \
+  RTE\_decoder\RTE_Components.h

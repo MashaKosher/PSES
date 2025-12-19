@@ -145,17 +145,17 @@ static void ProcessIRData(void) {
    * Start pulse: ~9ms burst
    * Header space: ~4.5ms for data, ~2.25ms for repeat
    */
-  if (ir_buffer[0] > 8500 && ir_buffer[0] < 9500 && ir_buffer[1] > 4000 &&
-      ir_buffer[1] < 5000) {
+  if (ir_buffer[0] > 7000 && ir_buffer[0] < 11000 && ir_buffer[1] > 3000 &&
+      ir_buffer[1] < 6000) {
     /* Decode 32 bits (address + inverse address + command + inverse command) */
     for (int i = 2; i < 66; i += 2) {
       uint32_t space = ir_buffer[i + 1];
 
-      if (space > 1400 && space < 1900) {
+      if (space > 1200 && space < 2100) {
         /* Logic 1: ~1.6875ms space */
         code = (code << 1) | 1;
         bit_count++;
-      } else if (space > 400 && space < 800) {
+      } else if (space > 300 && space < 900) {
         /* Logic 0: ~562.5us space */
         code = (code << 1);
         bit_count++;
@@ -169,7 +169,7 @@ static void ProcessIRData(void) {
     if (bit_count == 32) {
       SendIRCode(code);
     }
-  } else if (ir_buffer[0] > 8500 && ir_buffer[0] < 9500 &&
+  } else if (ir_buffer[0] > 7000 && ir_buffer[0] < 11000 &&
              ir_buffer[1] > 2000 && ir_buffer[1] < 2500) {
     /* NEC repeat code */
     const char *repeat_msg = "REPEAT\r\n";

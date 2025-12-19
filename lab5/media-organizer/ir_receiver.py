@@ -16,12 +16,23 @@ class IRReceiver:
     """Receives and parses IR codes from STM32 via serial port."""
 
     # IR Code mappings
-    CODE_GIF1_TOGGLE = 0x20DF8877  # Top-left corner
-    CODE_GIF2_TOGGLE = 0x20DF48B7  # Top-right corner
-    CODE_GIF3_TOGGLE = 0x20DFC837  # Bottom-left corner
-    CODE_GIF4_TOGGLE = 0x20DF28D7  # Bottom-right corner
-    CODE_PLAY_PAUSE = 0x20DFA857   # Play/Pause track
-    CODE_RESET_TRACK = 0x20DF6897  # Reset track to start
+    # CODE_GIF1_TOGGLE = 0x20DF8877  # Top-left corner
+    CODE_GIF1_TOGGLE = 0x00FF30CF  # Top-left corner
+
+    # CODE_GIF2_TOGGLE = 0x20DF48B7  # Top-right corner
+    CODE_GIF2_TOGGLE = 0x00FF18E7  # Top-right corner
+
+    # CODE_GIF3_TOGGLE = 0x20DFC837  # Bottom-left corner
+    CODE_GIF3_TOGGLE = 0x00FF7A85  # Bottom-left corner
+
+    # CODE_GIF4_TOGGLE = 0x20DF28D7  # Bottom-right corner
+    CODE_GIF4_TOGGLE = 0x00FF10EF  # Bottom-right corner
+
+    # CODE_PLAY_PAUSE = 0x20DFA857   # Play/Pause track
+    CODE_PLAY_PAUSE = 0x00FF38C7   # Play/Pause track
+
+    # CODE_RESET_TRACK = 0x20DF6897  # Reset track to start
+    CODE_RESET_TRACK = 0x00FF5AA5  # Reset track to start
 
     def __init__(self, port: Optional[str] = None, baudrate: int = 115200):
         self.port = port
