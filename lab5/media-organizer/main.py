@@ -255,17 +255,20 @@ class MediaOrganizer:
 
     def _process_ir_code(self, code: int):
         """Process IR code on main thread."""
-        if code == IRReceiver.CODE_GIF1_TOGGLE:
+        cmd = (code >> 8) & 0xFF
+        # Accept either full 32-bit code match or just the NEC command byte match.
+        # This makes the app robust if address differs across remotes.
+        if code == IRReceiver.CODE_GIF1_TOGGLE or cmd == IRReceiver.CMD_GIF1_TOGGLE:
             self._toggle_corner(0)
-        elif code == IRReceiver.CODE_GIF2_TOGGLE:
+        elif code == IRReceiver.CODE_GIF2_TOGGLE or cmd == IRReceiver.CMD_GIF2_TOGGLE:
             self._toggle_corner(1)
-        elif code == IRReceiver.CODE_GIF3_TOGGLE:
+        elif code == IRReceiver.CODE_GIF3_TOGGLE or cmd == IRReceiver.CMD_GIF3_TOGGLE:
             self._toggle_corner(2)
-        elif code == IRReceiver.CODE_GIF4_TOGGLE:
+        elif code == IRReceiver.CODE_GIF4_TOGGLE or cmd == IRReceiver.CMD_GIF4_TOGGLE:
             self._toggle_corner(3)
-        elif code == IRReceiver.CODE_PLAY_PAUSE:
+        elif code == IRReceiver.CODE_PLAY_PAUSE or cmd == IRReceiver.CMD_PLAY_PAUSE:
             self.media_controller.toggle_track()
-        elif code == IRReceiver.CODE_RESET_TRACK:
+        elif code == IRReceiver.CODE_RESET_TRACK or cmd == IRReceiver.CMD_RESET_TRACK:
             self.media_controller.reset_track()
 
     def _toggle_corner(self, index: int):

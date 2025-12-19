@@ -18,21 +18,27 @@ class IRReceiver:
     # IR Code mappings
     # CODE_GIF1_TOGGLE = 0x20DF8877  # Top-left corner
     CODE_GIF1_TOGGLE = 0x00FF30CF  # Top-left corner
+    CMD_GIF1_TOGGLE = (CODE_GIF1_TOGGLE >> 8) & 0xFF
 
     # CODE_GIF2_TOGGLE = 0x20DF48B7  # Top-right corner
     CODE_GIF2_TOGGLE = 0x00FF18E7  # Top-right corner
+    CMD_GIF2_TOGGLE = (CODE_GIF2_TOGGLE >> 8) & 0xFF
 
     # CODE_GIF3_TOGGLE = 0x20DFC837  # Bottom-left corner
     CODE_GIF3_TOGGLE = 0x00FF7A85  # Bottom-left corner
+    CMD_GIF3_TOGGLE = (CODE_GIF3_TOGGLE >> 8) & 0xFF
 
     # CODE_GIF4_TOGGLE = 0x20DF28D7  # Bottom-right corner
     CODE_GIF4_TOGGLE = 0x00FF10EF  # Bottom-right corner
+    CMD_GIF4_TOGGLE = (CODE_GIF4_TOGGLE >> 8) & 0xFF
 
     # CODE_PLAY_PAUSE = 0x20DFA857   # Play/Pause track
     CODE_PLAY_PAUSE = 0x00FF38C7   # Play/Pause track
+    CMD_PLAY_PAUSE = (CODE_PLAY_PAUSE >> 8) & 0xFF
 
     # CODE_RESET_TRACK = 0x20DF6897  # Reset track to start
     CODE_RESET_TRACK = 0x00FF5AA5  # Reset track to start
+    CMD_RESET_TRACK = (CODE_RESET_TRACK >> 8) & 0xFF
 
     def __init__(self, port: Optional[str] = None, baudrate: int = 115200):
         self.port = port
@@ -149,6 +155,12 @@ class MockIRReceiver:
     CODE_GIF4_TOGGLE = IRReceiver.CODE_GIF4_TOGGLE
     CODE_PLAY_PAUSE = IRReceiver.CODE_PLAY_PAUSE
     CODE_RESET_TRACK = IRReceiver.CODE_RESET_TRACK
+    CMD_GIF1_TOGGLE = IRReceiver.CMD_GIF1_TOGGLE
+    CMD_GIF2_TOGGLE = IRReceiver.CMD_GIF2_TOGGLE
+    CMD_GIF3_TOGGLE = IRReceiver.CMD_GIF3_TOGGLE
+    CMD_GIF4_TOGGLE = IRReceiver.CMD_GIF4_TOGGLE
+    CMD_PLAY_PAUSE = IRReceiver.CMD_PLAY_PAUSE
+    CMD_RESET_TRACK = IRReceiver.CMD_RESET_TRACK
 
     def __init__(self):
         self.callback: Optional[Callable[[int], None]] = None
