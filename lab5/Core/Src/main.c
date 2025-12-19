@@ -380,6 +380,34 @@ void Error_Handler(void) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* HAL tick overrides for RTOS                                                */
+/* -------------------------------------------------------------------------- */
+
+uint32_t HAL_GetTick(void) {
+  /* When RTX owns SysTick, use the RTOS tick count for HAL time base. */
+  return (uint32_t)osKernelGetTickCount();
+}
+
+void HAL_Delay(uint32_t Delay) {
+  /* Let RTOS handle delays when running; fallback to busy-wait before start. */
+  if (osKernelGetState() == osKernelRunning) {
+    (void)osDelay(Delay);
+    return;
+  }
+  uint32_t start = HAL_GetTick();
+  while ((HAL_GetTick() - start) < Delay) {}
+}
+
+HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
+  /* RTX configures SysTick; prevent HAL from reconfiguring it. */
+  (void)TickPriority;
+  return HAL_OK;
+}
+
+void HAL_SuspendTick(void) {}
+void HAL_ResumeTick(void) {}
+
 #ifdef USE_FULL_ASSERT
 /**
  * @brief  Reports the name of the source file and the source line number
