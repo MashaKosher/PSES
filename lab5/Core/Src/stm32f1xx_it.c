@@ -20,11 +20,6 @@
 #include "stm32f1xx_it.h"
 #include "cmsis_os2.h"
 
-/* RTX5 (CMSIS-RTOS2) handler functions (provided by ARM::CMSIS-RTX pack) */
-extern void osRtxSVCHandler(void);
-extern void osRtxPendSVHandler(void);
-extern void osRtxSysTickHandler(void);
-
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
@@ -87,10 +82,13 @@ void UsageFault_Handler(void)
 /**
   * @brief This function handles System service call via SWI instruction.
   */
-__weak void SVC_Handler(void)
+/* With RTX5 (CMSIS-RTOS2) Source, Keil provides SVC_Handler in irq_armv7m.S.
+ * Only provide a fallback handler when RTX5 is not enabled. */
+#if !defined(RTE_CMSIS_RTOS2_RTX5_SOURCE)
+void SVC_Handler(void)
 {
-  osRtxSVCHandler();
 }
+#endif
 
 /**
   * @brief This function handles Debug monitor.
@@ -102,19 +100,21 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles Pendable request for system service.
   */
-__weak void PendSV_Handler(void)
+#if !defined(RTE_CMSIS_RTOS2_RTX5_SOURCE)
+void PendSV_Handler(void)
 {
-  osRtxPendSVHandler();
 }
+#endif
 
 /**
   * @brief This function handles System tick timer.
   */
-__weak void SysTick_Handler(void)
+#if !defined(RTE_CMSIS_RTOS2_RTX5_SOURCE)
+void SysTick_Handler(void)
 {
   HAL_IncTick();
-  osRtxSysTickHandler();
 }
+#endif
 
 /******************************************************************************/
 /* STM32F1xx Peripheral Interrupt Handlers                                    */
