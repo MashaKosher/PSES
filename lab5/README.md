@@ -66,7 +66,7 @@ This matches **ARM::CMSIS-RTX** pack and the code in `lab5` (CMSIS-RTOS2 API):
 
 STM32F103RBT6 has only **20KB RAM**, RTX5 defaults can be too large. Fix it by reducing RTX memory in the generated config:
 
-1. In Keil project tree open: `RTE/_decoder/RTX_Config.c` (or `RTX_Config.h` depending on Keil version).
+1. In Keil project tree open: `RTE/CMSIS/RTX_Config.h` (this is the file used by RTX5 sources).
 2. Reduce these values (typical working starting point for F103):
    - **Idle thread stack**: 256 bytes
    - **Timer thread stack**: 512 bytes
@@ -74,8 +74,7 @@ STM32F103RBT6 has only **20KB RAM**, RTX5 defaults can be too large. Fix it by r
 3. Rebuild.
 
 This repository already includes a tuned config in:
-- `lab5/MDK-ARM/RTE/_decoder/RTX_Config.h`
-- `lab5/MDK-ARM/RTE/_decoder/RTX_Config.c`
+- `lab5/MDK-ARM/RTE/CMSIS/RTX_Config.h`
 
 If you previously generated different RTX config files on your PC, do a `git pull` and **rebuild** to pick up the smaller defaults.
 

@@ -44,7 +44,8 @@
 //   <i> Defines the combined global dynamic memory size.
 //   <i> Default: 32768
 #ifndef OS_DYNAMIC_MEM_SIZE
-#define OS_DYNAMIC_MEM_SIZE         32768
+/* STM32F103RBT6 has 20KB SRAM: keep RTX dynamic memory small. */
+#define OS_DYNAMIC_MEM_SIZE         0x0800U
 #endif
  
 //   <o>Kernel Tick Frequency [Hz] <1-1000000>
@@ -131,7 +132,7 @@
 //   <i> RTOS Functions called from ISR store requests to this buffer.
 //   <i> Default: 16 entries
 #ifndef OS_ISR_FIFO_QUEUE
-#define OS_ISR_FIFO_QUEUE           16
+#define OS_ISR_FIFO_QUEUE           4
 #endif
  
 //   <q>Object Memory usage counters
@@ -155,7 +156,8 @@
 //     <i> Defines maximum number of user threads that can be active at the same time.
 //     <i> Applies to user threads with system provided memory for control blocks.
 #ifndef OS_THREAD_NUM
-#define OS_THREAD_NUM               1
+/* One user task + internal threads (idle/timer) */
+#define OS_THREAD_NUM               2
 #endif
  
 //     <o>Number of user Threads with default Stack size <0-1000>
@@ -179,14 +181,14 @@
 //   <i> Defines stack size for threads with zero stack size specified.
 //   <i> Default: 3072
 #ifndef OS_STACK_SIZE
-#define OS_STACK_SIZE               3072
+#define OS_STACK_SIZE               256
 #endif
  
 //   <o>Idle Thread Stack size [bytes] <72-1073741824:8>
 //   <i> Defines stack size for Idle thread.
 //   <i> Default: 512
 #ifndef OS_IDLE_THREAD_STACK_SIZE
-#define OS_IDLE_THREAD_STACK_SIZE   512
+#define OS_IDLE_THREAD_STACK_SIZE   256
 #endif
  
 //   <o>Idle Thread TrustZone Module Identifier
@@ -215,7 +217,7 @@
 //   <i> Enables stack overrun check at thread switch (requires RTX source variant).
 //   <i> Enabling this option increases slightly the execution time of a thread switch.
 #ifndef OS_STACK_CHECK
-#define OS_STACK_CHECK              1
+#define OS_STACK_CHECK              0
 #endif
  
 //   <q>Stack usage watermark
@@ -248,7 +250,8 @@
 //     <i> Defines maximum number of objects that can be active at the same time.
 //     <i> Applies to objects with system provided memory for control blocks.
 #ifndef OS_TIMER_NUM
-#define OS_TIMER_NUM                1
+/* Timers are not used in this lab (use osDelay only) */
+#define OS_TIMER_NUM                0
 #endif
  
 //   </e>
@@ -269,7 +272,7 @@
 //   <i> May be set to 0 when timers are not used.
 //   <i> Default: 512
 #ifndef OS_TIMER_THREAD_STACK_SIZE
-#define OS_TIMER_THREAD_STACK_SIZE  512
+#define OS_TIMER_THREAD_STACK_SIZE  0
 #endif
  
 //   <o>Timer Thread TrustZone Module Identifier
@@ -299,7 +302,7 @@
 //   <i> May be set to 0 when timers are not used.
 //   <i> Default: 4
 #ifndef OS_TIMER_CB_QUEUE
-#define OS_TIMER_CB_QUEUE           4
+#define OS_TIMER_CB_QUEUE           0
 #endif
  
 // </h>
@@ -317,7 +320,7 @@
 //     <i> Defines maximum number of objects that can be active at the same time.
 //     <i> Applies to objects with system provided memory for control blocks.
 #ifndef OS_EVFLAGS_NUM
-#define OS_EVFLAGS_NUM              1
+#define OS_EVFLAGS_NUM              0
 #endif
  
 //   </e>
@@ -337,7 +340,7 @@
 //     <i> Defines maximum number of objects that can be active at the same time.
 //     <i> Applies to objects with system provided memory for control blocks.
 #ifndef OS_MUTEX_NUM
-#define OS_MUTEX_NUM                1
+#define OS_MUTEX_NUM                0
 #endif
  
 //   </e>
@@ -357,7 +360,7 @@
 //     <i> Defines maximum number of objects that can be active at the same time.
 //     <i> Applies to objects with system provided memory for control blocks.
 #ifndef OS_SEMAPHORE_NUM
-#define OS_SEMAPHORE_NUM            1
+#define OS_SEMAPHORE_NUM            0
 #endif
  
 //   </e>
@@ -377,7 +380,7 @@
 //     <i> Defines maximum number of objects that can be active at the same time.
 //     <i> Applies to objects with system provided memory for control blocks.
 #ifndef OS_MEMPOOL_NUM
-#define OS_MEMPOOL_NUM              1
+#define OS_MEMPOOL_NUM              0
 #endif
  
 //     <o>Data Storage Memory size [bytes] <0-1073741824:8>
@@ -405,7 +408,7 @@
 //     <i> Defines maximum number of objects that can be active at the same time.
 //     <i> Applies to objects with system provided memory for control blocks.
 #ifndef OS_MSGQUEUE_NUM
-#define OS_MSGQUEUE_NUM             1
+#define OS_MSGQUEUE_NUM             0
 #endif
  
 //     <o>Data Storage Memory size [bytes] <0-1073741824:8>
@@ -652,7 +655,8 @@
 // (when thread specific memory allocation is not used).
 #if (OS_THREAD_OBJ_MEM == 0)
 #ifndef OS_THREAD_LIBSPACE_NUM
-#define OS_THREAD_LIBSPACE_NUM      4
+/* Disable per-thread C library libspace to save SRAM. */
+#define OS_THREAD_LIBSPACE_NUM      0
 #endif
 #else
 #define OS_THREAD_LIBSPACE_NUM      OS_THREAD_NUM
