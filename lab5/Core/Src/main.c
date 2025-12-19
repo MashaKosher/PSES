@@ -38,7 +38,8 @@ DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* IR decoder variables */
-volatile uint32_t ir_buffer[IR_BUFFER_SIZE];
+/* Use 16-bit timings to save SRAM (max NEC pulse < 10ms -> fits in 0..65535us) */
+volatile uint16_t ir_buffer[IR_BUFFER_SIZE];
 volatile uint8_t ir_index = 0;
 volatile bool ir_data_ready = false;
 
@@ -239,7 +240,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     return;
 
   if (ir_index < IR_BUFFER_SIZE) {
-    ir_buffer[ir_index++] = duration;
+    if (duration > 0xFFFFU) {
+      duration = 0xFFFFU;
+    }
+    ir_buffer[ir_index++] = (uint16_t)duration;
   }
 
   /* NEC protocol: 67 edges for full transmission */
