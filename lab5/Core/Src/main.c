@@ -64,7 +64,7 @@ static void ProcessIRData(void);
 static osThreadId irTaskHandle;
 
 /* RTOS task prototypes */
-static void IRTask(void const *argument);
+static void irTask(void const *argument);
 
 /* Signal flags */
 #define IR_SIGNAL_DATA_READY (1U << 0)
@@ -102,7 +102,8 @@ int main(void) {
   /* RTOS init */
   osKernelInitialize();
 
-  osThreadDef(irTask, IRTask, osPriorityNormal, 0, 512);
+  /* CMSIS-RTOS v1: osThreadDef(name, priority, instances, stacksz) */
+  osThreadDef(irTask, osPriorityNormal, 1, 512);
   irTaskHandle = osThreadCreate(osThread(irTask), NULL);
 
   /* Start scheduler (should not return) */
@@ -115,7 +116,7 @@ int main(void) {
 /**
  * @brief RTOS task: waits for notification from EXTI ISR and decodes IR frame.
  */
-static void IRTask(void const *argument) {
+static void irTask(void const *argument) {
   (void)argument;
 
   for (;;) {

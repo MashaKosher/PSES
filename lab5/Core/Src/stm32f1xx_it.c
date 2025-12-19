@@ -20,6 +20,16 @@
 #include "stm32f1xx_it.h"
 #include "cmsis_os.h"
 
+/* CMSIS-RTOS v1 (e.g. Keil RTX) provides these handler functions.
+ * They are not declared in the template cmsis_os.h, so declare them here
+ * to avoid implicit declaration errors during compile.
+ *
+ * Note: you still must link an actual RTOS implementation (RTX/FreeRTOS CMSIS wrapper),
+ * otherwise you'll get linker errors. */
+extern void osSVCHandler(void);
+extern void osPendSVHandler(void);
+extern void osSystickHandler(void);
+
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
