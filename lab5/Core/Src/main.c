@@ -22,7 +22,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -61,13 +61,18 @@ static void SendIRCode(uint32_t code);
 static void ProcessIRData(void);
 
 /* RTOS objects */
-static osThreadId irTaskHandle;
+static osThreadId_t irTaskHandle;
 
 /* RTOS task prototypes */
 static void irTask(void const *argument);
 
 /* Signal flags */
 #define IR_SIGNAL_DATA_READY (1U << 0)
+
+static const osThreadAttr_t irTaskAttr = {
+    .name = "irTask",
+    .priority = osPriorityNormal,
+    .stack_size = 512};
 
 /* Private user code ---------------------------------------------------------*/
 
@@ -102,9 +107,7 @@ int main(void) {
   /* RTOS init */
   osKernelInitialize();
 
-  /* CMSIS-RTOS v1: osThreadDef(name, priority, instances, stacksz) */
-  osThreadDef(irTask, osPriorityNormal, 1, 512);
-  irTaskHandle = osThreadCreate(osThread(irTask), NULL);
+  irTaskHandle = osThreadNew((osThreadFunc_t)irTask, NULL, &irTaskAttr);
 
   /* Start scheduler (should not return) */
   osKernelStart();
@@ -120,7 +123,7 @@ static void irTask(void const *argument) {
   (void)argument;
 
   for (;;) {
-    (void)osSignalWait(IR_SIGNAL_DATA_READY, osWaitForever);
+    (void)osThreadFlagsWait(IR_SIGNAL_DATA_READY, osFlagsWaitAny, osWaitForever);
     if (ir_data_ready) {
       ProcessIRData();
       ir_data_ready = false;
@@ -246,8 +249,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     first_edge = true;
 
     /* Wake decoding task (if scheduler is running) */
-    if (osKernelRunning()) {
-      (void)osSignalSet(irTaskHandle, IR_SIGNAL_DATA_READY);
+    if (osKernelGetState() == osKernelRunning) {
+      (void)osThreadFlagsSet(irTaskHandle, IR_SIGNAL_DATA_READY);
     }
   }
 }
