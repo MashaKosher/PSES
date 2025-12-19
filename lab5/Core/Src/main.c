@@ -20,7 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include <stdbool.h>
-#include <stdio.h>
 #include <string.h>
 #include "cmsis_os2.h"
 
@@ -61,6 +60,9 @@ static uint32_t Micros(void);
 static void SendIRCode(uint32_t code);
 static void ProcessIRData(void);
 
+static void Hex8(uint32_t value, char *out);
+static void Hex2(uint8_t value, char *out);
+
 /* RTOS objects */
 static osThreadId_t irTaskHandle;
 
@@ -73,7 +75,7 @@ static void irTask(void const *argument);
 static const osThreadAttr_t irTaskAttr = {
     .name = "irTask",
     .priority = osPriorityNormal,
-    .stack_size = 512};
+    .stack_size = 384};
 
 /* Private user code ---------------------------------------------------------*/
 
@@ -188,17 +190,35 @@ static void SendIRCode(uint32_t code) {
 
   /* Extract NEC protocol fields */
   uint8_t addr = (code >> 24) & 0xFF;
-  uint8_t addr_inv = (code >> 16) & 0xFF;
   uint8_t cmd = (code >> 8) & 0xFF;
-  uint8_t cmd_inv = code & 0xFF;
 
-  /* Format: CODE:XXXXXXXX ADDR:XX CMD:XX */
-  snprintf(tx_buffer, UART_TX_BUFFER_SIZE,
-           "CODE:0x%08lX ADDR:0x%02X CMD:0x%02X\r\n", (unsigned long)code, addr,
-           cmd);
+  /* Format without printf to save SRAM/ROM (avoid libspace/stdio overhead) */
+  char *p = tx_buffer;
+  memcpy(p, "CODE:0x", 7); p += 7;
+  Hex8(code, p); p += 8;
+  memcpy(p, " ADDR:0x", 8); p += 8;
+  Hex2(addr, p); p += 2;
+  memcpy(p, " CMD:0x", 7); p += 7;
+  Hex2(cmd, p); p += 2;
+  memcpy(p, "\r\n", 2); p += 2;
+  *p = '\0';
 
   uart_busy = true;
   HAL_UART_Transmit_DMA(&huart2, (uint8_t *)tx_buffer, strlen(tx_buffer));
+}
+
+static void Hex8(uint32_t value, char *out) {
+  static const char hex[] = "0123456789ABCDEF";
+  for (int i = 0; i < 8; i++) {
+    out[7 - i] = hex[value & 0xFU];
+    value >>= 4;
+  }
+}
+
+static void Hex2(uint8_t value, char *out) {
+  static const char hex[] = "0123456789ABCDEF";
+  out[0] = hex[(value >> 4) & 0xFU];
+  out[1] = hex[value & 0xFU];
 }
 
 /**
