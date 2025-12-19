@@ -62,6 +62,17 @@ This matches **ARM::CMSIS-RTX** pack and the code in `lab5` (CMSIS-RTOS2 API):
 3. Keil will add the needed RTOS sources/config under `MDK-ARM/RTE/...`.
 4. Rebuild — linker errors like `Undefined symbol osKernelInitialize` must disappear.
 
+### If you get “No space in execution regions…” (SRAM overflow)
+
+STM32F103RBT6 has only **20KB RAM**, RTX5 defaults can be too large. Fix it by reducing RTX memory in the generated config:
+
+1. In Keil project tree open: `RTE/_decoder/RTX_Config.c` (or `RTX_Config.h` depending on Keil version).
+2. Reduce these values (typical working starting point for F103):
+   - **Idle thread stack**: 256 bytes
+   - **Timer thread stack**: 512 bytes
+   - **RTX dynamic memory**: 0x1000 (4KB) or 0x0800 (2KB) if still too big
+3. Rebuild.
+
 ### Option B: CubeMX FreeRTOS
 
 1. Open `decoder.ioc` in STM32CubeMX.
